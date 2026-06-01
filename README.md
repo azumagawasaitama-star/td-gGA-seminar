@@ -23,4 +23,4 @@
 |---|---|---|
 | `gGAハバードベンチ/gGAハバードベンチ.pdf` | Frank *et al.*, "Accuracy of ghost-rotationally-invariant slave-boson theory for multiorbital Hubbard models and realistic materials", *Phys. Rev. B* **104**, L081103 (2021) | [DOI](https://doi.org/10.1103/PhysRevB.104.L081103) |
 | `tdDMFT1.pdf` | Aoki, Tsuji, Eckstein, Kollar, Oka, Werner, "Nonequilibrium dynamical mean-field theory and its applications", *Rev. Mod. Phys.* **86**, 779 (2014) | [DOI](https://doi.org/10.1103/RevModPhys.86.779) |
-| `QEd_05_1_tomita.pdf` | 冨田（講義資料） | — |
+| `QEd_05_1_tomita.pdf` | 冨田，「量子エレクトロニクス」講義資料（東京大学OCW） | [PDF](https://ocw.u-tokyo.ac.jp/lecture_files/11447/5/notes/ja/QEd_05_1_tomita.pdf) |
