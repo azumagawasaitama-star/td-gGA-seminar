@@ -18,6 +18,10 @@ lanata.pdf
 QEd_05_1_tomita.pdf
 gGAハバードベンチ/gGAハバードベンチ.pdf
 
+# Paper directories (not seminar slides)
+gGAハバードベンチ/
+gGAベンチ tex形式/
+
 # macOS
 .DS_Store
 
