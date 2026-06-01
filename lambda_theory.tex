@@ -1,0 +1,123 @@
+\documentclass[12pt,a4paper]{ltjsarticle}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{physics}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{bm}
+\usepackage{booktabs}
+\geometry{margin=25mm}
+
+\title{TD-gGA における $\Lambda$ の取り扱いについての解説\\
+\large --- 変分パラメータとしての役割とゲージ選択の理解 ---}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{はじめに}
+ghost Gutzwiller近似 (gGA) を時間依存系に拡張した TD-gGA (Guerci et al., PRR 2023) の論文を読む際、多くの方が疑問に思うのが\textbf{「補助行列 $\Lambda$ の取り扱い」}です。
+平衡状態の理論では $\Lambda$ が重要な変数として登場しますが、時間発展 (TD) の理論では突然「$\Lambda = 0$ とする」と宣言され、式から姿を消してしまいます。
+
+本資料では、なぜそのような設定が許されるのか、そして $\Lambda$ が本来どのような役割を持っているのかを、計算アルゴリズムと物理的なゲージ対称性の両面から分かりやすく解説します。
+
+%-----------------------------------------------------------------------
+\section{平衡状態での $\Lambda$ の役割：ラグランジュ乗数と変分パラメータ}
+%-----------------------------------------------------------------------
+
+まず、平衡状態における gGA のラグランジアンを確認しましょう。ラグランジアンには、準粒子系（qp）と埋め込み系（emb）のエネルギーに加えて、両者を結びつけるための「拘束条件」が含まれています。
+
+\begin{align}
+  \mathcal{L}
+  &= \frac{1}{\mathcal{N}}
+     \langle\Psi_0|\hat{H}_\mathrm{qp}[\mathcal{R},\Lambda]|\Psi_0\rangle
+   + \langle\Phi|\hat{H}_\mathrm{emb}[\mathcal{D},\Lambda^c]|\Phi\rangle
+  \notag\\
+  &\quad
+   - \left[\,
+       \sum_{\sigma,a,b}
+       (\Lambda_{ab} + \Lambda^c_{ab})\,\Delta_{ab}
+     + \sum_{\sigma,c,a}
+       \bigl(\mathcal{D}_a\mathcal{R}_c
+             [\Delta(1-\Delta)]^{1/2}_{ca}
+             + \mathrm{c.c.}\bigr)
+   \right] + \text{(規格化項)}
+\end{align}
+
+ここで各ハミルトニアンは次のように定義されます。
+\begin{align}
+  \hat{H}_\mathrm{qp}[\mathcal{R},\Lambda]
+  &= \sum_{a,b}\sum_{\omega,\sigma}
+    (\varepsilon_\omega \mathcal{R}_a\mathcal{R}_b^\dagger + \Lambda_{ab})
+    \eta^\dagger_{\omega a\sigma}\eta_{\omega b\sigma}, \\
+  \hat{H}_\mathrm{emb}[\mathcal{D},\Lambda^c]
+  &= \frac{U}{2}(\hat{n}-1)^2
+   + \sum_{a,\sigma}(\mathcal{D}_a\hat{c}^\dagger_\sigma\hat{f}_{a\sigma} + \mathrm{H.c.})
+   + \sum_{a,b}\Lambda^c_{ab}\hat{f}_{b\sigma}\hat{f}^\dagger_{a\sigma}.
+\end{align}
+
+\subsection{方程式を解く順番と $\Lambda$ の位置づけ}
+
+ラグランジアン $\mathcal{L}$ を各変数で微分してゼロとおくことで、解くべき連立方程式（鞍点条件）が得られます。ここで重要なのは、\textbf{「$\Lambda$ を直接求める便利な方程式は存在しない」}という事実です。
+
+実際の数値計算アルゴリズムでは、変数は以下のような役割分担を持っています。
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ll}
+\toprule
+変数 & アルゴリズム上の役割と決め方 \\
+\midrule
+$\Delta$ & $\Lambda, \mathcal{R}$ を既知として、準粒子系の式から計算される。 \\
+$\mathcal{D}$ & $\mathcal{R}, \Delta$ を既知として計算される。 \\
+$\Lambda^c$ & $\Lambda, \mathcal{D}, \mathcal{R}, \Delta$ を既知として計算される。 \\
+$|\Phi\rangle$ & $\hat{H}_\mathrm{emb}[\mathcal{D},\Lambda^c]$ の基底状態として求められる。 \\
+\midrule
+\textbf{$\mathcal{R}$ と $\Lambda$} & \textbf{自由に動かして最適化する「変分パラメータ」} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+つまり、$\mathcal{R}$ と $\Lambda$ は初期値を適当に与え、他の方程式が矛盾なく成り立つ（自己無撞着条件を満たす）まで、ニュートン法などで反復的に修正していくパラメータなのです。
+
+%-----------------------------------------------------------------------
+\section{時間発展 (TD-gGA) ではなぜ $\Lambda = 0$ とできるのか？}
+%-----------------------------------------------------------------------
+
+平衡状態では値を探索しなければならなかった $\Lambda$ ですが、TD-gGA の論文 (Eq. 15) では、時間発展のラグランジアンを立てる際に\textbf{「最初から $\Lambda = 0$ と設定する」}というアプローチが取られています。
+
+これにより、準粒子系のハミルトニアンから $\Lambda$ が消え、時間発展の方程式（運動方程式）は次のようにスッキリとした形になります。
+\begin{equation}
+  i\partial_t n_{ab}(\omega)
+  = \omega\sum_c
+    \left[ \mathcal{R}_a\mathcal{R}_c^\dagger n_{cb}(\omega)
+   - n_{ac}(\omega)\mathcal{R}_c\mathcal{R}_b^\dagger \right]
+\end{equation}
+右辺に $\Lambda$ が全く登場していません。これが許される背景には、\textbf{物理的な対称性とゲージの自由度}が深く関わっています。
+
+\subsection{理由1：対称性による制約}
+まず、私たちがよく扱うスピン回転対称性 (SU(2) 対称性) を持つモデルを考えます。このとき、補助空間のサイトはすべて対等に扱われるため、$\Lambda$ は単位行列のスカラー倍（$\Lambda = \lambda I$）にならざるを得ません。
+
+\subsection{理由2：全体的なエネルギーのシフトは物理に影響しない}
+もし $\Lambda = \lambda I$ であった場合、これは準粒子ハミルトニアンにおいて「すべての補助フェルミオンのエネルギー基準を $\lambda$ だけズラす」ことと同じです。
+
+量子力学では、エネルギー全体を定数 $\lambda$ だけシフトすると、波動関数には $e^{-i\lambda t}$ という位相が追加されます。しかし、私たちが観測する「密度行列 $n_{ab} = \langle \eta^\dagger_a \eta_b \rangle$」は、生成演算子と消滅演算子のペアでできています。
+\begin{equation*}
+  \eta^\dagger_a \text{ から出る } e^{+i\lambda t} \quad \text{と} \quad \eta_b \text{ から出る } e^{-i\lambda t}
+\end{equation*}
+これらが互いに掛け合わさるため位相シフトが完全に打ち消し合い、\textbf{密度行列の時間発展には $\lambda$ の値が一切影響しません。}つまり、$\lambda$ をいくらに設定しても観測される物理は変わらないのです。
+
+\subsection{理由3：一般のモデルにおけるゲージ変換}
+スピン対称性がない複雑な多軌道モデルなどで $\Lambda$ が単位行列の定数倍にならない場合でも、補助空間に対して時間依存のユニタリー変換（ゲージ変換）を適切に施すことで、\textbf{常に新しいゲージにおいて $\Lambda = 0$ となるように系を書き換えることが可能}です。論文ではこの性質を利用しています。
+
+\section{まとめ}
+TD-gGA における $\Lambda$ の扱いは、以下のように整理できます。
+
+\begin{itemize}
+    \item \textbf{平衡状態：} 連立方程式の辻褄を合わせるために反復計算で決定する「変分パラメータ」です（ただし、粒子空孔対称性があるハーフフィルド模型などでは、対称性の帰結として自然に $\Lambda=0$ が解になります）。
+    \item \textbf{時間発展 (TD)：} 「$\Lambda$ は補助フェルミオンの位相を回すだけのゲージ自由度である」という物理的性質を利用し、方程式を最も簡単にするために\textbf{明示的に $\Lambda = 0$ に固定（ゲージ固定）}して計算を行います。
+\end{itemize}
+
+一方で、$\Lambda^c$ (バスレベルエネルギー) は埋め込み系 $|\Phi\rangle$ の状態を直接変えてしまうため、ゼロに固定することはできず、TD においても各時間ステップで真面目に計算して更新する必要があります。
+
+\end{document}

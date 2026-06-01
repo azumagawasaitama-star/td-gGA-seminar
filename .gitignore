@@ -1,0 +1,25 @@
+# LaTeX auxiliary files
+*.aux
+*.log
+*.nav
+*.snm
+*.toc
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+
+# Reference paper PDFs (copyright)
+td_gGA.pdf
+tdDMFT1.pdf
+lanata.pdf
+QEd_05_1_tomita.pdf
+gGAハバードベンチ/gGAハバードベンチ.pdf
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
